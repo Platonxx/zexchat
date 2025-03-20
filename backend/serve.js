@@ -3,7 +3,6 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const crypto = require('crypto'); // Node.js crypto 모듈
 
 const app = express();
 const server = http.createServer(app);
@@ -22,23 +21,11 @@ const io = new Server(server, {
   },
 });
 
-const AES_KEY = process.env.AES_KEY || 'fallback-key-123';
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
   res.send('Zexchat Backend Running');
 });
-
-async function decryptMessage(encryptedData, key) {
-  const decipher = crypto.createDecipheriv(
-    'aes-256-gcm',
-    Buffer.from(key),
-    Buffer.from(encryptedData.iv)
-  );
-  let decrypted = decipher.update(Buffer.from(encryptedData.encrypted));
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return decrypted.toString('utf8');
-}
 
 let waitingUser = null;
 
@@ -48,10 +35,6 @@ function updateOnlineCount() {
 }
 
 io.on('connection', (socket) => {
-  console.log('AES_KEY:', AES_KEY);
-  socket.emit('init', { aesKey: AES_KEY });
-  console.log('Sent AES key to client:', socket.id);
-
   socket.nickname = `Stranger${Math.floor(Math.random() * 1000)}`;
   socket.color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
   socket.status = 'online';
@@ -70,16 +53,17 @@ io.on('connection', (socket) => {
     partner.emit('matched', { partner: socket.nickname });
   }
 
-  socket.on('message', async (encryptedData) => {
+  socket.on('message', (msg) => {
     if (socket.partner) {
-      const decrypted = await decryptMessage(encryptedData, AES_KEY);
       socket.partner.emit('message', {
-        text: encryptedData,
+        text: msg,
         sender: socket.nickname,
         color: socket.color,
         id: socket.id,
       });
-      socket.emit('messageSent', decrypted);
+      socket.emit('messageSent', msg);
+    } else {
+      console.log('No partner found for', socket.nickname);
     }
   });
 

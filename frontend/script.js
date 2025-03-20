@@ -16,8 +16,6 @@ const socket = io(SOCKET_URL, {
   pingInterval: 25000,
   pingTimeout: 5000,
 });
-let AES_KEY = null;
-let isInitialized = false; // AES 키 초기화 상태
 let typingTimeout = null; // 타이핑 타이머
 let isScrolledUp = false; // 스크롤 상태
 let lastScrollTop = 0; // 스크롤 위치 추적
@@ -27,56 +25,10 @@ scrollUpBtn.textContent = '↑';
 scrollUpBtn.style.display = 'none';
 document.body.appendChild(scrollUpBtn);
 
-// Web Crypto API로 암호화/복호화 함수
-async function encryptMessage(message, key) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(message);
-  const keyBuffer = encoder.encode(key);
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyBuffer,
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt']
-  );
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    cryptoKey,
-    data
-  );
-  return { iv: Array.from(iv), encrypted: Array.from(new Uint8Array(encrypted)) };
-}
-
-async function decryptMessage(encryptedData, key) {
-  const decoder = new TextDecoder();
-  const keyBuffer = new TextEncoder().encode(key);
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyBuffer,
-    { name: 'AES-GCM' },
-    false,
-    ['decrypt']
-  );
-  const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: new Uint8Array(encryptedData.iv) },
-    cryptoKey,
-    new Uint8Array(encryptedData.encrypted)
-  );
-  return decoder.decode(decrypted);
-}
-
 // 소켓 연결 이벤트
 socket.on('connect', () => {
   console.log('Connected to server:', socket.id);
   ELEMENTS.status.textContent = "Connected to server...";
-});
-
-// AES 키 초기화
-socket.on('init', (data) => {
-  AES_KEY = data.aesKey;
-  isInitialized = true; // 초기화 완료
-  console.log('AES Key initialized:', AES_KEY);
   ELEMENTS.status.textContent = "Connected and ready to chat!";
 });
 
@@ -90,6 +42,7 @@ socket.on('waiting', () => {
 
 // 매칭 성공
 socket.on('matched', (data) => {
+  console.log('Matched with:', data.partner);
   ELEMENTS.status.textContent = `Connected with ${data.partner}`;
   ELEMENTS.status.classList.add('fade-in', 'online');
   setTimeout(() => ELEMENTS.status.classList.remove('fade-in'), 500);
@@ -98,19 +51,14 @@ socket.on('matched', (data) => {
 });
 
 // 메시지 수신
-socket.on('message', async (data) => {
-  if (!AES_KEY) {
-    console.error('AES key not available for decryption');
-    return;
-  }
-  const decrypted = await decryptMessage(data, AES_KEY);
-  addMessage(`<span class="nickname" style="color: ${data.color}">${data.sender}</span>: ${decrypted}`, data.id, 'them');
+socket.on('message', (data) => {
+  addMessage(`<span class="nickname" style="color: ${data.color}">${data.sender}</span>: ${data.text}`, data.id, 'them');
   socket.emit('read', data.id);
 });
 
 // 메시지 전송 확인
 socket.on('messageSent', (msg) => {
-  console.log('Message sent received:', msg); // 디버깅 로그
+  console.log('Message sent received:', msg);
   addMessage(`<span class="nickname">Me</span>: ${msg}`, socket.id, 'me');
 });
 
@@ -135,6 +83,7 @@ socket.on('messageRead', (msgId) => {
 
 // 상대방 연결 끊김
 socket.on('disconnected', () => {
+  console.log('Partner disconnected');
   ELEMENTS.status.textContent = "Your opponent has left.";
   ELEMENTS.status.classList.add('fade-in', 'offline');
   setTimeout(() => ELEMENTS.status.classList.remove('fade-in'), 500);
@@ -172,26 +121,15 @@ function addMessage(msg, id, type) {
   });
 }
 
-// 메시지 전송 함수 (Web Crypto API 사용)
-async function sendMessage() {
+// 메시지 전송 함수 (암호화 제거)
+function sendMessage() {
   const msg = ELEMENTS.input.value.trim();
-  if (!isInitialized || !AES_KEY) {
-    console.error('AES key not initialized yet. Please wait.');
-    ELEMENTS.status.textContent = "Waiting for encryption key...";
-    return;
-  }
   if (msg) {
-    try {
-      console.log('Encrypting message:', msg); // 디버깅 로그
-      const encryptedData = await encryptMessage(msg, AES_KEY);
-      console.log('Sending encrypted message:', encryptedData); // 디버깅 로그
-      socket.emit('message', encryptedData);
-      ELEMENTS.input.value = '';
-      ELEMENTS.charCount.textContent = '200';
-      if (navigator.vibrate) navigator.vibrate([50, 50]);
-    } catch (error) {
-      console.error('Error encrypting message:', error);
-    }
+    console.log('Sending message:', msg);
+    socket.emit('message', msg);
+    ELEMENTS.input.value = '';
+    ELEMENTS.charCount.textContent = '200';
+    if (navigator.vibrate) navigator.vibrate([50, 50]);
   }
 }
 
@@ -211,6 +149,7 @@ function handleTyping(event) {
 
 // 다음 채팅 요청
 function nextChat() {
+  console.log('Requesting next chat');
   socket.emit('next');
   ELEMENTS.messages.innerHTML = '';
 }
