@@ -8,7 +8,7 @@ const ELEMENTS = {
   onlineCount: document.getElementById('online-count'),
 };
 
-const SOCKET_URL = 'http://localhost:3000'; // 배포 후 'https://zexchat-xxx.onrender.com'
+const SOCKET_URL = 'https://zexchat.onrender.com'; // 배포 후 'https://zexchat-xxx.onrender.com'
 const socket = io(SOCKET_URL);
 let AES_KEY = null;
 let typingTimeout;
