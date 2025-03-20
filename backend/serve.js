@@ -14,7 +14,7 @@ const io = new Server(server, {
 const AES_KEY = process.env.AES_KEY || 'fallback-key-123';
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static('../frontend')); // 정적 파일 제공 (필요 시 수정)
+app.use(express.static('../frontend')); // Render에서는 수정 필요
 
 let waitingUser = null;
 
