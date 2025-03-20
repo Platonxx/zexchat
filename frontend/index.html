@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zexchat</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+</head>
+<body>
+  <div id="chat">
+    <div id="header">
+      <span id="site-name">Zexchat</span>
+      <span id="status"></span>
+      <span id="online-count">Online: 0</span> <!-- 동접자 수 표시 -->
+      <button id="theme-toggle">🌙</button>
+    </div>
+    <div id="messages"></div>
+    <div id="input-area">
+      <input id="input" type="text" placeholder="Type a message..." maxlength="200" onkeyup="handleTyping(event)">
+      <span id="char-count">200</span>
+      <button id="send-btn" onclick="sendMessage()"><i class="send-icon">➤</i></button>
+      <button id="next-btn" onclick="nextChat()">Next</button>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+  <script src="seo.js"></script>
+</body>
+</html>
