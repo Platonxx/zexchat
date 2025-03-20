@@ -2,15 +2,19 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const CryptoJS = require('crypto-js');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
-const AES_KEY = process.env.AES_KEY || 'fallback-key-123'; // Render에서 설정한 값 읽기
+const io = new Server(server, {
+  cors: {
+    origin: 'https://zexchat.onrender.com', // 프론트엔드 도메인 허용
+    methods: ['GET', 'POST'],
+  },
+});
+const AES_KEY = process.env.AES_KEY || 'fallback-key-123';
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static('../frontend'));
+app.use(express.static('../frontend')); // 정적 파일 제공 (필요 시 수정)
 
 let waitingUser = null;
 
@@ -20,10 +24,10 @@ function updateOnlineCount() {
 }
 
 io.on('connection', (socket) => {
-  console.log('AES_KEY:', AES_KEY); // 환경 변수 확인
+  console.log('AES_KEY:', AES_KEY);
   socket.emit('init', { aesKey: AES_KEY });
   console.log('Sent AES key to client:', socket.id);
-  
+
   socket.nickname = `Stranger${Math.floor(Math.random() * 1000)}`;
   socket.color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
   socket.status = 'online';
