@@ -7,14 +7,18 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'https://zexchat.onrender.com', // 프론트엔드 도메인 허용
+    origin: 'https://zexchat.onrender.com', // 프론트엔드 도메인 명시
     methods: ['GET', 'POST'],
+    credentials: true, // 필요 시 추가
   },
 });
 const AES_KEY = process.env.AES_KEY || 'fallback-key-123';
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static('../frontend')); // Render에서는 수정 필요
+// Render 백엔드는 정적 파일 제공 불필요, 기본 경로 추가
+app.get('/', (req, res) => {
+  res.send('Zexchat Backend Running');
+});
 
 let waitingUser = null;
 
