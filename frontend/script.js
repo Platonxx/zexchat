@@ -25,6 +25,10 @@ scrollUpBtn.textContent = '↑';
 scrollUpBtn.style.display = 'none';
 document.body.appendChild(scrollUpBtn);
 
+// 메시지 버퍼링
+let messageBuffer = [];
+let isRendering = false;
+
 // 소켓 연결 이벤트
 socket.on('connect', () => {
   console.log('Connected to server:', socket.id);
@@ -56,10 +60,9 @@ socket.on('message', (data) => {
   socket.emit('read', data.id);
 });
 
-// 메시지 전송 확인
+// 메시지 전송 확인 (로컬 표시로 대체하므로 불필요)
 socket.on('messageSent', (msg) => {
-  console.log('Message sent received:', msg);
-  addMessage(`<span class="nickname">Me</span>: ${msg}`, socket.id, 'me');
+  console.log('Message sent confirmed:', msg);
 });
 
 // 상대방 상태 업데이트
@@ -102,30 +105,43 @@ socket.on('onlineCount', (count) => {
   console.log('Online count updated:', count);
 });
 
-// 메시지 추가 함수 (DOM 조작 최적화)
+// 메시지 추가 함수 (버퍼링 적용)
 function addMessage(msg, id, type) {
-  if (!ELEMENTS.messages) {
-    console.error('ELEMENTS.messages is null');
-    return;
+  messageBuffer.push({ msg, id, type });
+  if (!isRendering) {
+    renderMessages();
   }
-  const div = document.createElement('div');
-  div.className = `message ${type} new`;
-  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  div.innerHTML = `${msg} <span class="timestamp">${time}</span>`;
-  if (id !== 'system') div.dataset.id = id;
+}
 
+function renderMessages() {
+  isRendering = true;
   requestAnimationFrame(() => {
-    ELEMENTS.messages.appendChild(div);
-    if (!isScrolledUp) ELEMENTS.messages.scrollTop = ELEMENTS.messages.scrollHeight;
-    setTimeout(() => div.classList.remove('new'), 1000);
+    while (messageBuffer.length > 0) {
+      const { msg, id, type } = messageBuffer.shift();
+      if (!ELEMENTS.messages) {
+        console.error('ELEMENTS.messages is null');
+        continue;
+      }
+      const div = document.createElement('div');
+      div.className = `message ${type} new`;
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      div.innerHTML = `${msg} <span class="timestamp">${time}</span>`;
+      if (id !== 'system') div.dataset.id = id;
+      ELEMENTS.messages.appendChild(div);
+      if (!isScrolledUp) ELEMENTS.messages.scrollTop = ELEMENTS.messages.scrollHeight;
+      setTimeout(() => div.classList.remove('new'), 1000);
+    }
+    isRendering = false;
   });
 }
 
-// 메시지 전송 함수 (암호화 제거)
+// 메시지 전송 함수 (로컬 표시 추가)
 function sendMessage() {
   const msg = ELEMENTS.input.value.trim();
   if (msg) {
     console.log('Sending message:', msg);
+    // 로컬에서 즉시 표시
+    addMessage(`<span class="nickname">Me</span>: ${msg}`, socket.id, 'me');
     socket.emit('message', msg);
     ELEMENTS.input.value = '';
     ELEMENTS.charCount.textContent = '200';
