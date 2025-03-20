@@ -8,35 +8,20 @@ const ELEMENTS = {
   onlineCount: document.getElementById('online-count'),
 };
 
-const SOCKET_URL = 'https://zexchat.onrender.com'; // 배포 후 'https://zexchat-xxx.onrender.com'
+const SOCKET_URL = 'https://zexchat-backend.onrender.com'; // Render 배포 URL
 const socket = io(SOCKET_URL);
 let AES_KEY = null;
-let typingTimeout;
-let isScrolledUp = false;
-let lastScrollTop = 0;
 
-const scrollUpBtn = (() => {
-  const btn = document.createElement('button');
-  btn.id = 'scroll-up';
-  btn.textContent = '↑';
-  btn.onclick = () => {
-    ELEMENTS.messages.scrollTop = lastScrollTop;
-    btn.style.display = 'none';
-  };
-  ELEMENTS.messages.appendChild(btn);
-  return btn;
-})();
-
-// 초기화 대기 상태 관리
-let isInitialized = false;
+socket.on('connect', () => {
+  console.log('Connected to server:', socket.id);
+  ELEMENTS.status.textContent = "Connected to server...";
+});
 
 socket.on('init', (data) => {
   AES_KEY = data.aesKey;
-  isInitialized = true;
-  console.log('AES Key initialized:', AES_KEY);
-  ELEMENTS.status.textContent = "Connected to server. Ready to chat!";
+  console.log('AES Key initialized:', AES_KEY); // 키 수신 확인
+  ELEMENTS.status.textContent = "Connected and ready to chat!";
 });
-
 socket.on('waiting', () => {
   ELEMENTS.status.textContent = "Finding an opponent...";
   ELEMENTS.status.classList.add('waiting', 'fade-in');

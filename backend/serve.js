@@ -7,7 +7,8 @@ const CryptoJS = require('crypto-js');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-const AES_KEY = process.env.AES_KEY || 'fallback-key-123';
+const AES_KEY = process.env.AES_KEY || 'fallback-key-123'; // Render에서 설정한 값 읽기
+const PORT = process.env.PORT || 3000;
 
 app.use(express.static('../frontend'));
 
@@ -15,15 +16,14 @@ let waitingUser = null;
 
 function updateOnlineCount() {
   const onlineCount = io.sockets.sockets.size;
-  console.log('Updating online count:', onlineCount);
   io.emit('onlineCount', onlineCount);
 }
 
 io.on('connection', (socket) => {
-  // 연결 직후 AES 키 즉시 전송
+  console.log('AES_KEY:', AES_KEY); // 환경 변수 확인
   socket.emit('init', { aesKey: AES_KEY });
   console.log('Sent AES key to client:', socket.id);
-
+  
   socket.nickname = `Stranger${Math.floor(Math.random() * 1000)}`;
   socket.color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
   socket.status = 'online';
@@ -103,6 +103,6 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log('Server running at http://localhost:3000');
+server.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
