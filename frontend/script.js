@@ -11,7 +11,11 @@ const ELEMENTS = {
 
 // 전역 변수 초기화
 const SOCKET_URL = 'https://zexchat-backend.onrender.com'; // Render 배포 URL
-const socket = io(SOCKET_URL);
+const socket = io(SOCKET_URL, {
+  transports: ['websocket', 'polling'], // WebSocket 우선
+  pingInterval: 25000,
+  pingTimeout: 5000,
+});
 let AES_KEY = null;
 let isInitialized = false; // AES 키 초기화 상태
 let typingTimeout = null; // 타이핑 타이머
@@ -22,6 +26,45 @@ scrollUpBtn.id = 'scroll-up-btn';
 scrollUpBtn.textContent = '↑';
 scrollUpBtn.style.display = 'none';
 document.body.appendChild(scrollUpBtn);
+
+// Web Crypto API로 암호화/복호화 함수
+async function encryptMessage(message, key) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const keyBuffer = encoder.encode(key);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    keyBuffer,
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt']
+  );
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    cryptoKey,
+    data
+  );
+  return { iv: Array.from(iv), encrypted: Array.from(new Uint8Array(encrypted)) };
+}
+
+async function decryptMessage(encryptedData, key) {
+  const decoder = new TextDecoder();
+  const keyBuffer = new TextEncoder().encode(key);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    keyBuffer,
+    { name: 'AES-GCM' },
+    false,
+    ['decrypt']
+  );
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: new Uint8Array(encryptedData.iv) },
+    cryptoKey,
+    new Uint8Array(encryptedData.encrypted)
+  );
+  return decoder.decode(decrypted);
+}
 
 // 소켓 연결 이벤트
 socket.on('connect', () => {
@@ -55,12 +98,12 @@ socket.on('matched', (data) => {
 });
 
 // 메시지 수신
-socket.on('message', (data) => {
+socket.on('message', async (data) => {
   if (!AES_KEY) {
     console.error('AES key not available for decryption');
     return;
   }
-  const decrypted = CryptoJS.AES.decrypt(data.text, AES_KEY).toString(CryptoJS.enc.Utf8);
+  const decrypted = await decryptMessage(data, AES_KEY);
   addMessage(`<span class="nickname" style="color: ${data.color}">${data.sender}</span>: ${decrypted}`, data.id, 'them');
   socket.emit('read', data.id);
 });
@@ -109,7 +152,7 @@ socket.on('onlineCount', (count) => {
   console.log('Online count updated:', count);
 });
 
-// 메시지 추가 함수
+// 메시지 추가 함수 (DOM 조작 최적화)
 function addMessage(msg, id, type) {
   if (!ELEMENTS.messages) return;
   const div = document.createElement('div');
@@ -117,13 +160,16 @@ function addMessage(msg, id, type) {
   const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   div.innerHTML = `${msg} <span class="timestamp">${time}</span>`;
   if (id !== 'system') div.dataset.id = id;
-  ELEMENTS.messages.appendChild(div);
-  if (!isScrolledUp) ELEMENTS.messages.scrollTop = ELEMENTS.messages.scrollHeight;
-  setTimeout(() => div.classList.remove('new'), 1000);
+
+  requestAnimationFrame(() => {
+    ELEMENTS.messages.appendChild(div);
+    if (!isScrolledUp) ELEMENTS.messages.scrollTop = ELEMENTS.messages.scrollHeight;
+    setTimeout(() => div.classList.remove('new'), 1000);
+  });
 }
 
-// 메시지 전송 함수
-function sendMessage() {
+// 메시지 전송 함수 (Web Crypto API 사용)
+async function sendMessage() {
   const msg = ELEMENTS.input.value.trim();
   if (!isInitialized || !AES_KEY) {
     console.error('AES key not initialized yet. Please wait.');
@@ -131,8 +177,8 @@ function sendMessage() {
     return;
   }
   if (msg) {
-    const encrypted = CryptoJS.AES.encrypt(msg, AES_KEY).toString();
-    socket.emit('message', encrypted);
+    const encryptedData = await encryptMessage(msg, AES_KEY);
+    socket.emit('message', encryptedData);
     ELEMENTS.input.value = '';
     ELEMENTS.charCount.textContent = '200';
     if (navigator.vibrate) navigator.vibrate([50, 50]);
