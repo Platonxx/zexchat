@@ -2,19 +2,18 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const cors = require('cors'); // CORS 패키지 추가
+const cors = require('cors');
+const crypto = require('crypto'); // Node.js crypto 모듈
 
 const app = express();
 const server = http.createServer(app);
 
-// Express에 CORS 미들웨어 추가
 app.use(cors({
-  origin: 'https://zexchat.onrender.com', // 프론트엔드 도메인 허용
+  origin: 'https://zexchat.onrender.com',
   methods: ['GET', 'POST'],
-  credentials: true, // 필요 시
+  credentials: true,
 }));
 
-// Socket.IO에 CORS 설정
 const io = new Server(server, {
   cors: {
     origin: 'https://zexchat.onrender.com',
@@ -29,6 +28,17 @@ const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => {
   res.send('Zexchat Backend Running');
 });
+
+async function decryptMessage(encryptedData, key) {
+  const decipher = crypto.createDecipheriv(
+    'aes-256-gcm',
+    Buffer.from(key),
+    Buffer.from(encryptedData.iv)
+  );
+  let decrypted = decipher.update(Buffer.from(encryptedData.encrypted));
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted.toString('utf8');
+}
 
 let waitingUser = null;
 
@@ -60,15 +70,16 @@ io.on('connection', (socket) => {
     partner.emit('matched', { partner: socket.nickname });
   }
 
-  socket.on('message', (encryptedData) => {
+  socket.on('message', async (encryptedData) => {
     if (socket.partner) {
+      const decrypted = await decryptMessage(encryptedData, AES_KEY);
       socket.partner.emit('message', {
         text: encryptedData,
         sender: socket.nickname,
         color: socket.color,
         id: socket.id,
       });
-      socket.emit('messageSent', CryptoJS.AES.decrypt(encryptedData, AES_KEY).toString(CryptoJS.enc.Utf8));
+      socket.emit('messageSent', decrypted);
     }
   });
 

@@ -110,6 +110,7 @@ socket.on('message', async (data) => {
 
 // 메시지 전송 확인
 socket.on('messageSent', (msg) => {
+  console.log('Message sent received:', msg); // 디버깅 로그
   addMessage(`<span class="nickname">Me</span>: ${msg}`, socket.id, 'me');
 });
 
@@ -154,7 +155,10 @@ socket.on('onlineCount', (count) => {
 
 // 메시지 추가 함수 (DOM 조작 최적화)
 function addMessage(msg, id, type) {
-  if (!ELEMENTS.messages) return;
+  if (!ELEMENTS.messages) {
+    console.error('ELEMENTS.messages is null');
+    return;
+  }
   const div = document.createElement('div');
   div.className = `message ${type} new`;
   const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -177,11 +181,17 @@ async function sendMessage() {
     return;
   }
   if (msg) {
-    const encryptedData = await encryptMessage(msg, AES_KEY);
-    socket.emit('message', encryptedData);
-    ELEMENTS.input.value = '';
-    ELEMENTS.charCount.textContent = '200';
-    if (navigator.vibrate) navigator.vibrate([50, 50]);
+    try {
+      console.log('Encrypting message:', msg); // 디버깅 로그
+      const encryptedData = await encryptMessage(msg, AES_KEY);
+      console.log('Sending encrypted message:', encryptedData); // 디버깅 로그
+      socket.emit('message', encryptedData);
+      ELEMENTS.input.value = '';
+      ELEMENTS.charCount.textContent = '200';
+      if (navigator.vibrate) navigator.vibrate([50, 50]);
+    } catch (error) {
+      console.error('Error encrypting message:', error);
+    }
   }
 }
 
