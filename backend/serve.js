@@ -60,15 +60,15 @@ io.on('connection', (socket) => {
     partner.emit('matched', { partner: socket.nickname });
   }
 
-  socket.on('message', (encrypted) => {
+  socket.on('message', (encryptedData) => {
     if (socket.partner) {
       socket.partner.emit('message', {
-        text: encrypted,
+        text: encryptedData,
         sender: socket.nickname,
         color: socket.color,
         id: socket.id,
       });
-      socket.emit('messageSent', CryptoJS.AES.decrypt(encrypted, AES_KEY).toString(CryptoJS.enc.Utf8));
+      socket.emit('messageSent', CryptoJS.AES.decrypt(encryptedData, AES_KEY).toString(CryptoJS.enc.Utf8));
     }
   });
 
