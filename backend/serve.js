@@ -2,20 +2,30 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const cors = require('cors'); // CORS 패키지 추가
 
 const app = express();
 const server = http.createServer(app);
+
+// Express에 CORS 미들웨어 추가
+app.use(cors({
+  origin: 'https://zexchat.onrender.com', // 프론트엔드 도메인 허용
+  methods: ['GET', 'POST'],
+  credentials: true, // 필요 시
+}));
+
+// Socket.IO에 CORS 설정
 const io = new Server(server, {
   cors: {
-    origin: 'https://zexchat.onrender.com', // 프론트엔드 도메인 명시
+    origin: 'https://zexchat.onrender.com',
     methods: ['GET', 'POST'],
-    credentials: true, // 필요 시 추가
+    credentials: true,
   },
 });
+
 const AES_KEY = process.env.AES_KEY || 'fallback-key-123';
 const PORT = process.env.PORT || 3000;
 
-// Render 백엔드는 정적 파일 제공 불필요, 기본 경로 추가
 app.get('/', (req, res) => {
   res.send('Zexchat Backend Running');
 });
@@ -38,39 +48,36 @@ io.on('connection', (socket) => {
   console.log(`${socket.nickname} connected`);
   updateOnlineCount();
 
-  if (waitingUser) {
-    socket.partner = waitingUser;
-    waitingUser.partner = socket;
-    socket.emit('matched', { msg: 'Connected with an opponent!', partner: waitingUser.nickname });
-    waitingUser.emit('matched', { msg: 'Connected with an opponent!', partner: socket.nickname });
-    socket.emit('partnerStatus', waitingUser.status);
-    waitingUser.emit('partnerStatus', socket.status);
-    waitingUser = null;
-  } else {
+  if (!waitingUser) {
     waitingUser = socket;
-    socket.emit('waiting', 'Finding an opponent...');
+    socket.emit('waiting');
+  } else {
+    const partner = waitingUser;
+    waitingUser = null;
+    socket.partner = partner;
+    partner.partner = socket;
+    socket.emit('matched', { partner: partner.nickname });
+    partner.emit('matched', { partner: socket.nickname });
   }
 
-  socket.on('message', (encryptedMsg) => {
+  socket.on('message', (encrypted) => {
     if (socket.partner) {
-      const decrypted = CryptoJS.AES.decrypt(encryptedMsg, AES_KEY).toString(CryptoJS.enc.Utf8);
-      socket.partner.emit('message', { text: encryptedMsg, id: socket.id, sender: socket.nickname, color: socket.color });
-      socket.emit('messageSent', decrypted);
+      socket.partner.emit('message', {
+        text: encrypted,
+        sender: socket.nickname,
+        color: socket.color,
+        id: socket.id,
+      });
+      socket.emit('messageSent', CryptoJS.AES.decrypt(encrypted, AES_KEY).toString(CryptoJS.enc.Utf8));
     }
   });
 
   socket.on('typing', () => {
-    if (socket.partner) {
-      socket.status = 'typing';
-      socket.partner.emit('partnerStatus', socket.status);
-    }
+    if (socket.partner) socket.partner.emit('partnerStatus', 'typing');
   });
 
   socket.on('stopTyping', () => {
-    if (socket.partner) {
-      socket.status = 'online';
-      socket.partner.emit('partnerStatus', socket.status);
-    }
+    if (socket.partner) socket.partner.emit('partnerStatus', 'online');
   });
 
   socket.on('read', (msgId) => {
@@ -79,34 +86,31 @@ io.on('connection', (socket) => {
 
   socket.on('next', () => {
     if (socket.partner) {
-      socket.partner.emit('disconnected', 'Your opponent ended the chat.');
-      socket.partner.emit('partnerStatus', 'offline');
+      socket.partner.emit('disconnected');
       socket.partner.partner = null;
       socket.partner = null;
     }
-    if (waitingUser && waitingUser !== socket) {
-      socket.partner = waitingUser;
-      waitingUser.partner = socket;
-      socket.emit('matched', { msg: 'Connected with a new opponent!', partner: waitingUser.nickname });
-      waitingUser.emit('matched', { msg: 'Connected with a new opponent!', partner: socket.nickname });
-      socket.emit('partnerStatus', waitingUser.status);
-      waitingUser.emit('partnerStatus', socket.status);
-      waitingUser = null;
-    } else {
+    if (!waitingUser) {
       waitingUser = socket;
-      socket.emit('waiting', 'Finding an opponent...');
+      socket.emit('waiting');
+    } else {
+      const partner = waitingUser;
+      waitingUser = null;
+      socket.partner = partner;
+      partner.partner = socket;
+      socket.emit('matched', { partner: partner.nickname });
+      partner.emit('matched', { partner: socket.nickname });
     }
   });
 
   socket.on('disconnect', () => {
-    if (socket.partner) {
-      socket.partner.emit('disconnected', 'Your opponent has left.');
-      socket.partner.emit('partnerStatus', 'offline');
-      socket.partner.partner = null;
-    } else if (waitingUser === socket) {
-      waitingUser = null;
-    }
     console.log(`${socket.nickname} disconnected`);
+    if (socket === waitingUser) waitingUser = null;
+    if (socket.partner) {
+      socket.partner.emit('disconnected');
+      socket.partner.partner = null;
+      socket.partner = null;
+    }
     updateOnlineCount();
   });
 });
