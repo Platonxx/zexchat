@@ -22,11 +22,13 @@ sendMessage.addEventListener("click", () => {
     chatBox.innerHTML += `<div class="message sent">${message}</div>`;
     socket.emit("send_message", message);
     messageInput.value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
   }
 });
 
 socket.on("receive_message", (message) => {
   chatBox.innerHTML += `<div class="message received">${message}</div>`;
+  chatBox.scrollTop = chatBox.scrollHeight;
 });
 
 socket.on("match_found", () => {
