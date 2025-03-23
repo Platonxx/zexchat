@@ -1,10 +1,28 @@
-// 다크 모드 기능
-document.querySelector('.dark-mode-toggle').addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-});
+document.addEventListener("DOMContentLoaded", function () {
+    const messageInput = document.getElementById("message-input");
+    const sendButton = document.getElementById("send-btn");
 
-// 메시지 입력창 크기 자동 조정
-document.getElementById('message-input').addEventListener('input', function () {
-    this.style.height = "auto";
-    this.style.height = (this.scrollHeight) + "px";
+    sendButton.addEventListener("click", function () {
+        sendMessage();
+    });
+
+    // Enter 키로도 메시지 전송 가능하게 설정
+    messageInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    });
+
+    function sendMessage() {
+        const message = messageInput.value.trim();
+        if (message === "") return; // 빈 메시지 방지
+
+        console.log("메시지 전송됨:", message); // 메시지 로그 출력 (테스트용)
+        
+        // 🚀 실제 메시지 전송 로직 (서버 API 요청 or WebSocket)
+        // sendToServer(message);
+
+        // 입력창 비우기
+        messageInput.value = "";
+    }
 });
