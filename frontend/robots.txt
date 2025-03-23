@@ -1,2 +1,11 @@
 User-agent: *
 Allow: /
+
+# 검색엔진 크롤링에서 제외할 경로
+Disallow: /admin
+Disallow: /api
+Disallow: /settings
+Disallow: /user-profile
+
+# 사이트맵 위치
+Sitemap: https://zexchat.com/sitemap.xml
