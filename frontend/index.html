@@ -6,9 +6,7 @@
     <title>Zexchat - Anonymous Random Chat</title>
 
     <meta name="description" content="Zexchat - Connect with strangers for free, anonymous random chats anytime. Start talking now!">
-    <meta name="keywords" content="random chat, anonymous chat, talk to strangers, private chat, instant messaging, encrypted chat">
     <meta name="author" content="Zexchat Team">
-    <meta name="robots" content="index, follow">
     
     <!-- Open Graph -->
     <meta property="og:title" content="Zexchat - Anonymous Chat">
@@ -34,8 +32,8 @@
 
     <div id="chat-container"></div>
 
-    <input type="text" id="message-input" placeholder="Type a message...">
-    <button id="send-btn">▶ Send</button>
+    <input type="text" id="message-input" placeholder="Type a message..." aria-label="Message input">
+    <button id="send-btn" aria-label="Send message">▶ Send</button>
 
     <!-- 추가적인 SEO를 위한 숨겨진 소개 텍스트 -->
     <div id="intro-text" style="display: none;">
@@ -54,6 +52,82 @@
     }
     </script>
 
-    <script src="app.js"></script>
+    <!-- ✅ JavaScript 코드 추가 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const messageInput = document.getElementById("message-input");
+            const sendButton = document.getElementById("send-btn");
+            const chatContainer = document.getElementById("chat-container");
+            const statusIndicator = document.createElement("p");
+            document.body.insertBefore(statusIndicator, chatContainer);
+
+            // ✅ WebSocket 연결
+            const SOCKET_URL = "https://zexchat-backend.onrender.com"; // 실제 백엔드 주소
+            const socket = io(SOCKET_URL, {
+                transports: ["websocket", "polling"], // WebSocket 우선
+                pingInterval: 25000,
+                pingTimeout: 5000,
+            });
+
+            // ✅ 연결 상태 업데이트
+            socket.on("connect", () => {
+                console.log("Connected to server:", socket.id);
+                statusIndicator.textContent = "🟢 Connected";
+            });
+
+            socket.on("disconnect", () => {
+                console.log("Disconnected from server");
+                statusIndicator.textContent = "🔴 Disconnected";
+            });
+
+            socket.on("connect_error", (err) => {
+                console.error("Connection error:", err);
+                statusIndicator.textContent = "⚠️ Connection failed!";
+            });
+
+            // ✅ 메시지 입력 및 전송
+            sendButton.addEventListener("click", sendMessage);
+            messageInput.addEventListener("keypress", function (event) {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault(); // 기본 엔터 입력 방지
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (message === "") return;
+
+                displayMessage("You", message, "user-message");
+
+                // ✅ WebSocket을 사용해 메시지 전송
+                socket.emit("message", { text: message });
+
+                messageInput.value = "";
+                adjustTextareaHeight(); // 입력 후 높이 초기화
+            }
+
+            function displayMessage(sender, text, className) {
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("message", className);
+                messageElement.innerHTML = `<strong>${sender}:</strong> ${text}`;
+                chatContainer.appendChild(messageElement);
+                chatContainer.scrollTop = chatContainer.scrollHeight; // 스크롤 자동 이동
+            }
+
+            // ✅ 서버에서 메시지 받기
+            socket.on("message", (data) => {
+                displayMessage("Partner", data.text, "partner-message");
+            });
+
+            // ✅ 입력창 자동 크기 조정
+            messageInput.addEventListener("input", adjustTextareaHeight);
+
+            function adjustTextareaHeight() {
+                messageInput.style.height = "auto";
+                messageInput.style.height = `${Math.min(messageInput.scrollHeight, 120)}px`; // 최대 120px 제한
+            }
+        });
+    </script>
 </body>
 </html>
