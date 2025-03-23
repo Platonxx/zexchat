@@ -1,12 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
     const messageInput = document.getElementById("message-input");
     const sendButton = document.getElementById("send-btn");
-    const chatContainer = document.getElementById("chat-container"); // 채팅 표시할 영역
+    const chatContainer = document.getElementById("chat-container");
 
-    sendButton.addEventListener("click", function () {
-        sendMessage();
-    });
-
+    sendButton.addEventListener("click", sendMessage);
     messageInput.addEventListener("keypress", function (event) {
         if (event.key === "Enter") {
             sendMessage();
@@ -15,20 +12,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function sendMessage() {
         const message = messageInput.value.trim();
-        if (message === "") return; // 빈 메시지 방지
+        if (message === "") return;
 
-        displayMessage("You", message); // 화면에 메시지 표시
-        sendToServer(message); // 서버로 전송
+        displayMessage("You", message, "user-message");
+        sendToServer(message);
 
-        messageInput.value = ""; // 입력창 초기화
+        messageInput.value = "";
     }
 
-    function displayMessage(sender, text) {
+    function displayMessage(sender, text, className) {
         const messageElement = document.createElement("div");
-        messageElement.classList.add("message");
+        messageElement.classList.add("message", className);
         messageElement.innerHTML = `<strong>${sender}:</strong> ${text}`;
         chatContainer.appendChild(messageElement);
-        chatContainer.scrollTop = chatContainer.scrollHeight; // 최신 메시지로 스크롤 이동
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
     function sendToServer(message) {
