@@ -1,10 +1,14 @@
+/* 전체 스타일 */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', 'Roboto', sans-serif; /* 현대적인 폰트 */
+  font-weight: 400;
   text-align: center;
   background-color: #f4f4f4;
   margin: 0;
+  color: #333;
 }
 
+/* 컨테이너 */
 .container {
   display: flex;
   justify-content: center;
@@ -12,82 +16,116 @@ body {
   height: 100vh;
 }
 
+/* 메인 및 채팅 화면 */
 .mainScreen, .chatScreen {
-  width: 100%;
-  max-width: 500px;
+  width: 90%;
+  max-width: 600px; /* 더 넓은 화면 활용 */
   background: white;
-  padding: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
 }
 
+/* 제목 */
 h1 {
-  font-size: 24px;
+  font-size: 28px;
+  font-weight: 600;
 }
 
+/* 버튼 공통 스타일 */
 button {
   width: 100%;
-  padding: 15px;
+  padding: 12px 20px;
   margin: 10px 0;
   border: none;
   cursor: pointer;
   font-size: 18px;
   border-radius: 5px;
+  transition: all 0.3s ease; /* 부드러운 전환 */
 }
 
 button:hover {
-  opacity: 0.8;
+  opacity: 0.9;
+  transform: translateY(-2px); /* 호버 시 살짝 올라감 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* 상태 메시지 */
 .status {
-  font-size: 14px;
-  color: gray;
+  font-size: 15px;
+  color: #555; /* 가독성 향상 */
   margin-bottom: 10px;
 }
 
+/* 채팅 박스 */
 .chatBox {
-  height: 400px;
+  height: 60vh; /* 화면 크기에 비례 */
+  max-height: 500px;
   overflow-y: auto;
-  background: #f9f9f9;
+  background: #f0f2f5;
   padding: 10px;
   border-radius: 5px;
   scrollbar-width: thin;
+  scrollbar-color: #888 #f0f2f5; /* 커스텀 스크롤바 */
 }
 
+/* 메시지 공통 스타일 */
 .message {
-  padding: 10px;
+  padding: 12px 15px;
   margin: 5px;
   border-radius: 10px;
   max-width: 80%;
   word-wrap: break-word;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: background 0.2s ease;
 }
 
+/* 발신 메시지 */
 .sent {
-  background: #007bff;
+  background: linear-gradient(135deg, #007bff, #0056b3); /* 그라디언트 추가 */
   color: white;
   text-align: right;
   margin-left: auto;
 }
 
+.sent:hover {
+  background: #0069d9;
+}
+
+/* 수신 메시지 */
 .received {
-  background: #ddd;
+  background: #e2e2e2;
+  color: #333;
   text-align: left;
 }
 
+.received:hover {
+  background: #e9ecef;
+}
+
+/* 입력 영역 */
 .inputArea {
   display: flex;
-  gap: 5px;
+  gap: 10px; /* 간격 증가 */
   margin-top: 10px;
 }
 
 input {
   flex-grow: 1;
-  padding: 12px;
+  padding: 14px;
   font-size: 16px;
   border-radius: 5px;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.3s ease;
 }
 
+input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* 채팅 컨트롤 버튼 */
 .chatControls {
   display: flex;
   flex-direction: column;
@@ -96,16 +134,54 @@ input {
 }
 
 #nextChat {
-  background-color: #28a745;
+  background: linear-gradient(135deg, #28a745, #1f7d36);
   color: white;
 }
 
 #exitChat {
-  background-color: #dc3545;
+  background: linear-gradient(135deg, #dc3545, #b02a37);
   color: white;
 }
 
 #startChat {
-  background-color: #007bff;
+  background: linear-gradient(135deg, #007bff, #0056b3);
   color: white;
+}
+
+/* 반응형 디자인 */
+@media (min-width: 768px) {
+  .mainScreen, .chatScreen {
+    max-width: 800px; /* 데스크톱에서 더 넓게 */
+  }
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1a1a1a;
+    color: #ddd;
+  }
+  .mainScreen, .chatScreen {
+    background: #2c2c2c;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  }
+  .chatBox {
+    background: #333;
+    scrollbar-color: #888 #333;
+  }
+  .sent {
+    background: linear-gradient(135deg, #1e90ff, #0069d9);
+  }
+  .received {
+    background: #444;
+    color: #ddd;
+  }
+  input {
+    background: #333;
+    color: #ddd;
+    border-color: #555;
+  }
+  .status {
+    color: #aaa;
+  }
 }
