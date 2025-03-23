@@ -1,65 +1,128 @@
+/* 기본 스타일 */
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: #f4f4f4;
-    padding: 20px;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #f4f4f4;
+  color: #333;
+  padding: 20px;
 }
 
-h1 {
-    margin-bottom: 10px;
-}
-
+/* 채팅 컨테이너 */
 #chat-container {
-    width: 100%;
-    max-width: 400px;
-    height: 300px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin: 20px auto;
-    background: white;
-    border-radius: 5px;
-    text-align: left;
+  max-width: 400px;
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: auto;
+  background: #fff;
+  border-radius: 8px;
 }
 
+/* 메시지 스타일 */
 .message {
-    padding: 8px;
-    margin: 5px 0;
-    border-radius: 5px;
-    max-width: 80%;
-    word-wrap: break-word;
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 5px;
+  max-width: 80%;
+  word-wrap: break-word;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
+/* 사용자 메시지 */
 .user-message {
-    background: #007bff;
-    color: white;
-    text-align: right;
-    margin-left: auto;
+  background: #007bff;
+  color: #fff;
+  text-align: right;
+  margin-left: auto;
 }
 
+/* 시스템 메시지 */
 .system-message {
-    background: #e3f2fd;
-    color: black;
-    text-align: left;
+  background: #e3f2fd;
+  color: #333;
+  text-align: left;
+  margin-right: auto;
 }
 
+/* 입력창 스타일 */
 #message-input {
-    width: 80%;
-    padding: 10px;
-    margin-top: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+  width: 80%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
+/* 전송 버튼 */
 #send-btn {
-    padding: 10px;
-    background: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
 #send-btn:hover {
-    background: #0056b3;
+  background: #0056b3;
+}
+
+/* 메시지 애니메이션 효과 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 🌙 다크 모드 적용 */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #121212;
+    color: #ffffff;
+  }
+  
+  #chat-container {
+    background: #1e1e1e;
+    border-color: #333333;
+  }
+
+  .user-message {
+    background: #bb86fc;
+  }
+
+  .system-message {
+    background: #333333;
+  }
+
+  #message-input {
+    background: #333333;
+    color: #ffffff;
+    border-color: #444444;
+  }
+
+  #send-btn {
+    background: #bb86fc;
+  }
+
+  #send-btn:hover {
+    background: #9a67ea;
+  }
+}
+
+/* 📱 반응형 디자인 */
+@media (max-width: 600px) {
+  #chat-container {
+    width: 100%;
+    height: auto;
+  }
+  
+  #message-input {
+    width: 100%;
+  }
 }
