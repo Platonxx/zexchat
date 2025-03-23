@@ -13,8 +13,8 @@ body {
 }
 
 .mainScreen, .chatScreen {
-  width: 90%;
-  max-width: 400px;
+  width: 100%;
+  max-width: 500px;
   background: white;
   padding: 20px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -26,11 +26,12 @@ h1 {
 }
 
 button {
-  padding: 10px 20px;
-  margin: 10px;
+  width: 100%;
+  padding: 15px;
+  margin: 10px 0;
   border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
   border-radius: 5px;
 }
 
@@ -45,23 +46,27 @@ button:hover {
 }
 
 .chatBox {
-  height: 300px;
+  height: 400px;
   overflow-y: auto;
   background: #f9f9f9;
   padding: 10px;
   border-radius: 5px;
+  scrollbar-width: thin;
 }
 
 .message {
-  padding: 8px;
+  padding: 10px;
   margin: 5px;
-  border-radius: 5px;
+  border-radius: 10px;
+  max-width: 80%;
+  word-wrap: break-word;
 }
 
 .sent {
   background: #007bff;
   color: white;
   text-align: right;
+  margin-left: auto;
 }
 
 .received {
@@ -77,14 +82,16 @@ button:hover {
 
 input {
   flex-grow: 1;
-  padding: 8px;
+  padding: 12px;
+  font-size: 16px;
   border-radius: 5px;
   border: 1px solid #ddd;
 }
 
 .chatControls {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 10px;
   margin-top: 10px;
 }
 
