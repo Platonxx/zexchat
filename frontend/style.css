@@ -1,60 +1,82 @@
-/* 기본 스타일 (PC & 모바일 공통) */
+/* 기본 스타일 */
 body {
-    padding: 20px;
-    font-family: Arial, sans-serif;
-}
-
-/* 중앙 정렬 */
-.container {
-    max-width: 600px; /* PC에서는 600px 고정 */
-    margin: 0 auto;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to bottom, #ffffff, #e3f2fd); /* 부드러운 배경 */
     text-align: center;
+    padding: 20px;
 }
 
-/* 입력창 스타일 */
-input[type="text"] {
-    width: 80%; /* PC에서는 80% */
-    padding: 10px;
+/* 컨테이너 스타일 */
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 입체감 추가 */
+}
+
+/* 제목 스타일 */
+h1 {
+    font-size: 28px;
+    color: #333;
+}
+
+/* 온라인 상태 텍스트 */
+p {
     font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-/* 버튼 스타일 */
-button {
-    padding: 10px 15px;
-    font-size: 16px;
-    border-radius: 5px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #0056b3;
+    color: #666;
 }
 
 /* 다크 모드 버튼 */
 .dark-mode-toggle {
+    display: block;
+    font-size: 24px;
+    margin: 10px auto;
+    cursor: pointer;
     background: none;
     border: none;
-    font-size: 20px;
-    cursor: pointer;
 }
 
-/* 📌 모바일 최적화 */
-@media screen and (max-width: 768px) {
-    .container {
-        max-width: 100%; /* 모바일에서는 전체 너비 사용 */
-    }
+/* 입력창 스타일 */
+input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
 
-    input[type="text"] {
-        width: 90%; /* 모바일에서는 더 넓게 */
-    }
+/* 버튼 스타일 */
+button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
 
-    button {
-        width: 90%;
-        font-size: 14px; /* 모바일에서는 버튼 크기 축소 */
-    }
+/* 전송 버튼 */
+#send-btn {
+    background: #007bff;
+    color: white;
+}
+
+#send-btn:hover {
+    background: #0056b3;
+}
+
+/* 다음 버튼 */
+#next-btn {
+    background: #28a745;
+    color: white;
+    margin-top: 10px;
+}
+
+#next-btn:hover {
+    background: #218838;
 }
