@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import "./style.css";
 
-const socket = io("http://localhost:3000"); // 서버 주소
+const socket = io("http://localhost:3000");
 
 function App() {
   const [inChat, setInChat] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [status, setStatus] = useState("랜덤 채팅 시작을 누르세요.");
+  const chatBoxRef = useRef(null);
 
   useEffect(() => {
     socket.on("match_found", () => setStatus("상대방과 연결되었습니다."));
@@ -23,6 +24,12 @@ function App() {
       socket.off("partner_disconnected");
     };
   }, []);
+
+  useEffect(() => {
+    if (chatBoxRef.current) {
+      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const startChat = () => {
     setMessages([]);
@@ -55,7 +62,7 @@ function App() {
       ) : (
         <div className="chatScreen">
           <div className="status">{status}</div>
-          <div className="chatBox">
+          <div className="chatBox" ref={chatBoxRef}>
             {messages.map((msg, idx) => (
               <div key={idx} className={`message ${msg.type}`}>
                 {msg.text}
