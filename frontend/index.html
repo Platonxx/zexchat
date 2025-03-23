@@ -3,32 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zexchat - Anonymous Random Chat</title>
-    <meta name="description" content="Zexchat is a free, anonymous random chat platform. Connect with strangers instantly and enjoy secure, fun conversations.">
-    <meta name="keywords" content="random chat, anonymous chat, zexchat, online chat, stranger chat">
-    <meta name="robots" content="index, follow">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" href="styles.css">
-    <meta name="google-site-verification" content="q5a4QrX5W2SqTDx49dMmYay_2wnQ9D7GfMsaWvMcSiA" />
+    <title>Zexchat</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="chat">
-    <div id="header">
-      <span id="site-name">Zexchat</span>
-      <span id="status"></span>
-      <span id="online-count">Online: 0</span> <!-- 동접자 수 표시 -->
-      <button id="theme-toggle">🌙</button>
+    <div class="container">
+        <h1>Zexchat</h1>
+        <p>Finding an opponent... Online: <span id="online-count">1</span></p>
+
+        <button class="dark-mode-toggle">🌙</button>
+
+        <input type="text" id="message-input" placeholder="Type a message...">
+        <button id="send-btn">▶</button>
+        <button id="next-btn">Next</button>
     </div>
-    <div id="messages"></div>
-    <div id="input-area">
-      <input id="input" type="text" placeholder="Type a message..." maxlength="200" onkeyup="handleTyping(event)">
-      <span id="char-count">200</span>
-      <button id="send-btn" onclick="sendMessage()"><i class="send-icon">➤</i></button>
-      <button id="next-btn" onclick="nextChat()">Next</button>
-    </div>
-  </div>
-  <script src="https://zexchat-backend.onrender.com/socket.io/socket.io.js"></script>
-  <script src="script.js"></script>
-  <script src="seo.js"></script>
+
+    <script src="app.js"></script>
 </body>
 </html>
