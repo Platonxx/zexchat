@@ -3,17 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zexchat</title>
+    <title>Zexchat - Anonymous Random Chat</title>
+
+    <meta name="description" content="Zexchat - Connect with strangers for free, anonymous random chats anytime. Start talking now!">
+    <meta name="keywords" content="random chat, anonymous chat, talk to strangers, private chat, instant messaging, encrypted chat">
+    <meta name="author" content="Zexchat Team">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Zexchat - Anonymous Chat">
+    <meta property="og:description" content="Connect with strangers for free, anonymous random chats anytime. Start talking now!">
+    <meta property="og:image" content="https://zexchat.com/images/zexchat-banner.png">
+    <meta property="og:url" content="https://zexchat.com">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Zexchat - Anonymous Chat">
+    <meta name="twitter:description" content="Connect with strangers for free, anonymous random chats anytime. Start talking now!">
+    <meta name="twitter:image" content="https://zexchat.com/images/zexchat-banner.png">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://zexchat.com">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Zexchat</h1>
+    <h1>Zexchat - Anonymous Random Chat</h1>
     <p>Finding an opponent... Online: <span id="online-count">1</span></p>
 
     <div id="chat-container"></div>
 
     <input type="text" id="message-input" placeholder="Type a message...">
     <button id="send-btn">▶ Send</button>
+
+    <!-- 추가적인 SEO를 위한 숨겨진 소개 텍스트 -->
+    <div id="intro-text" style="display: none;">
+        <p>Welcome to Zexchat, your go-to place for anonymous random chats. 
+        Meet new people and chat with strangers instantly, without registration.</p>
+    </div>
+
+    <!-- Schema.org 구조화 데이터 -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ChatRoom",
+      "name": "Zexchat",
+      "url": "https://zexchat.com",
+      "description": "Zexchat - Connect with strangers for free, anonymous random chats anytime. Start talking now!"
+    }
+    </script>
 
     <script src="app.js"></script>
 </body>
