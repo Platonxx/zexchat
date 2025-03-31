@@ -22,12 +22,11 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
+let waitingUser = null;
 
 app.get('/', (req, res) => {
   res.send('Zexchat Backend Running');
 });
-
-let waitingUser = null;
 
 function updateOnlineCount() {
   const onlineCount = io.sockets.sockets.size;
@@ -36,8 +35,6 @@ function updateOnlineCount() {
 
 io.on('connection', (socket) => {
   socket.nickname = `Stranger${Math.floor(Math.random() * 1000)}`;
-  socket.color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-  socket.status = 'online';
   console.log(`${socket.nickname} connected`);
   updateOnlineCount();
 
@@ -49,39 +46,21 @@ io.on('connection', (socket) => {
     waitingUser = null;
     socket.partner = partner;
     partner.partner = socket;
-    socket.emit('matched', { partner: partner.nickname });
-    partner.emit('matched', { partner: socket.nickname });
+
+    socket.emit('match_found');
+    partner.emit('match_found');
   }
 
-  socket.on('message', (msg) => {
+  socket.on('send_message', (msg) => {
     if (socket.partner) {
-      socket.partner.emit('message', {
-        text: msg,
-        sender: socket.nickname,
-        color: socket.color,
-        id: socket.id,
-      });
+      socket.partner.emit('receive_message', { text: msg, sender: socket.nickname });
       socket.emit('messageSent', msg);
-    } else {
-      console.log('No partner found for', socket.nickname);
     }
-  });
-
-  socket.on('typing', () => {
-    if (socket.partner) socket.partner.emit('partnerStatus', 'typing');
-  });
-
-  socket.on('stopTyping', () => {
-    if (socket.partner) socket.partner.emit('partnerStatus', 'online');
-  });
-
-  socket.on('read', (msgId) => {
-    if (socket.partner) socket.partner.emit('messageRead', msgId);
   });
 
   socket.on('next', () => {
     if (socket.partner) {
-      socket.partner.emit('disconnected');
+      socket.partner.emit('partner_disconnected');
       socket.partner.partner = null;
       socket.partner = null;
     }
@@ -93,8 +72,9 @@ io.on('connection', (socket) => {
       waitingUser = null;
       socket.partner = partner;
       partner.partner = socket;
-      socket.emit('matched', { partner: partner.nickname });
-      partner.emit('matched', { partner: socket.nickname });
+
+      socket.emit('match_found');
+      partner.emit('match_found');
     }
   });
 
@@ -102,7 +82,7 @@ io.on('connection', (socket) => {
     console.log(`${socket.nickname} disconnected`);
     if (socket === waitingUser) waitingUser = null;
     if (socket.partner) {
-      socket.partner.emit('disconnected');
+      socket.partner.emit('partner_disconnected');
       socket.partner.partner = null;
       socket.partner = null;
     }
