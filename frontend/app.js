@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import styled from "styled-components";
 import io from "socket.io-client";
+import "./style.css"; // 스타일 분리
 
 const socket = io("http://localhost:3000");
 
@@ -38,16 +38,13 @@ function App() {
     socket.emit("find_partner");
   };
 
-  const sendMessage = () => {
+  const sendMessage = (e) => {
+    e.preventDefault(); // Enter 키를 눌렀을 때도 동작하도록 변경
     if (input.trim()) {
       socket.emit("send_message", input);
-      setMessages((prev) => [...prev, { text: input, type: "sent" }]);
+      setMessages([...messages, { text: input, type: "sent" }]);
       setInput("");
     }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") sendMessage();
   };
 
   const nextChat = () => {
@@ -57,38 +54,37 @@ function App() {
   };
 
   return (
-    <Container>
+    <div className="container">
       {!inChat ? (
-        <MainScreen>
+        <div className="mainScreen">
           <h1>랜덤 채팅</h1>
-          <Button onClick={startChat}>랜덤 채팅 시작</Button>
-        </MainScreen>
+          <button onClick={startChat}>랜덤 채팅 시작</button>
+        </div>
       ) : (
-        <ChatScreen>
-          <Status>{status}</Status>
-          <ChatBox ref={chatBoxRef}>
+        <div className="chatScreen">
+          <div className="status">{status}</div>
+          <div className="chatBox" ref={chatBoxRef}>
             {messages.map((msg, idx) => (
-              <MessageContainer key={idx} type={msg.type}>
-                <Message type={msg.type}>{msg.text}</Message>
-              </MessageContainer>
+              <div key={idx} className={`message ${msg.type}`}>
+                {msg.text}
+              </div>
             ))}
-          </ChatBox>
-          <InputArea>
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="메시지를 입력하세요..."
+          </div>
+          <form className="inputArea" onSubmit={sendMessage}>
+            <input 
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              placeholder="메시지를 입력하세요..." 
             />
-            <Button onClick={sendMessage}>전송</Button>
-          </InputArea>
-          <ChatControls>
-            <Button onClick={nextChat} variant="green">다음 상대</Button>
-            <Button onClick={() => setInChat(false)} variant="red">나가기</Button>
-          </ChatControls>
-        </ChatScreen>
+            <button type="submit">전송</button>
+          </form>
+          <div className="chatControls">
+            <button onClick={nextChat}>다음 상대</button>
+            <button onClick={() => setInChat(false)}>나가기</button>
+          </div>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }
 
