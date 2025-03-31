@@ -1,8 +1,82 @@
 import { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
-import "./style.css";
+import styled from "styled-components";
 
 const socket = io("http://localhost:3000");
+
+// 스타일 정의
+const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: 'Inter', sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+`;
+
+const Screen = styled.div`
+  width: 90%;
+  max-width: 600px;
+  background: white;
+  padding: 25px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  text-align: center;
+`;
+
+const Button = styled.button`
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  border-radius: 5px;
+  transition: 0.3s;
+  background: ${(props) => props.bg || "#007bff"};
+  color: white;
+  
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+`;
+
+const ChatBox = styled.div`
+  height: 60vh;
+  max-height: 500px;
+  overflow-y: auto;
+  background: #f0f2f5;
+  padding: 10px;
+  border-radius: 5px;
+`;
+
+const InputArea = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+`;
+
+const Input = styled.input`
+  flex-grow: 1;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+`;
+
+const Message = styled.div`
+  padding: 12px;
+  margin: 5px;
+  border-radius: 10px;
+  max-width: 80%;
+  word-wrap: break-word;
+  background: ${(props) => (props.type === "sent" ? "#007bff" : "#e2e2e2")};
+  color: ${(props) => (props.type === "sent" ? "white" : "#333")};
+  text-align: ${(props) => (props.type === "sent" ? "right" : "left")};
+  margin-left: ${(props) => (props.type === "sent" ? "auto" : "0")};
+`;
 
 function App() {
   const [inChat, setInChat] = useState(false);
@@ -53,33 +127,36 @@ function App() {
   };
 
   return (
-    <div className="container">
+    <Container>
       {!inChat ? (
-        <div className="mainScreen">
+        <Screen>
           <h1>랜덤 채팅</h1>
-          <button onClick={startChat}>랜덤 채팅 시작</button>
-        </div>
+          <Button onClick={startChat}>랜덤 채팅 시작</Button>
+        </Screen>
       ) : (
-        <div className="chatScreen">
+        <Screen>
           <div className="status">{status}</div>
-          <div className="chatBox" ref={chatBoxRef}>
+          <ChatBox ref={chatBoxRef}>
             {messages.map((msg, idx) => (
-              <div key={idx} className={`message ${msg.type}`}>
+              <Message key={idx} type={msg.type}>
                 {msg.text}
-              </div>
+              </Message>
             ))}
-          </div>
-          <div className="inputArea">
-            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="메시지를 입력하세요..." />
-            <button onClick={sendMessage}>전송</button>
-          </div>
-          <div className="chatControls">
-            <button onClick={nextChat}>다음 상대</button>
-            <button onClick={() => setInChat(false)}>나가기</button>
-          </div>
-        </div>
+          </ChatBox>
+          <InputArea>
+            <Input 
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              placeholder="메시지를 입력하세요..." 
+              onKeyPress={(e) => e.key === "Enter" && sendMessage()} 
+            />
+            <Button onClick={sendMessage}>전송</Button>
+          </InputArea>
+          <Button bg="#28a745" onClick={nextChat}>다음 상대</Button>
+          <Button bg="#dc3545" onClick={() => setInChat(false)}>나가기</Button>
+        </Screen>
       )}
-    </div>
+    </Container>
   );
 }
 
